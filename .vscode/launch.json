@@ -1,0 +1,11 @@
+{
+	"configurations": [
+		{
+			"type": "java",
+			"name": "CodeLens (Launch) - InitWindow",
+			"request": "launch",
+			"mainClass": "PAT.InitWindow",
+			"projectName": "Grade 12 PAT Gerrit Grobler"
+		}
+	]
+}
