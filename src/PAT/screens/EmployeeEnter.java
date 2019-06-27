@@ -1,5 +1,6 @@
 package PAT;
 
+import PAT.main.MainInit;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -22,12 +23,13 @@ import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 import com.toedter.calendar.JCalendar;
+import java.awt.Color;
 
 public class EmployeeEnter extends JPanel {
 
 	public EmployeeEnter() {
 		setPreferredSize(new Dimension(800, 600));
-		//setBackground(Color.red);
+		setBackground(Color.red);
 
 		GridBagLayout gbl = new GridBagLayout();
 		
@@ -263,9 +265,8 @@ public class EmployeeEnter extends JPanel {
 		
 		JPanel vPanel = new JPanel();
 		vPanel.setLayout(new GridBagLayout());
-		c.gridx = 0;
+		c.gridx = 2;
 		c.gridy = 5;
-		c.gridwidth = 5;
 		add(vPanel, c);
 		
 		JButton vButton = new JButton("Validate");
@@ -365,6 +366,26 @@ public class EmployeeEnter extends JPanel {
 			}
 		});
 		vPanel.add(vButton);
+		
+		JPanel backPanel = new JPanel();
+		backPanel.setLayout(new GridBagLayout());
+		c.gridx = 3;
+		c.gridy = 5;
+		add(backPanel, c);
+		
+		JButton backButton = new JButton("Back");
+		backButton.setPreferredSize(new Dimension (230, 70));
+		backButton.setHorizontalAlignment(JLabel.CENTER);
+		backButton.addActionListener(new ActionListener()
+		{
+			@Override
+			public void actionPerformed(ActionEvent e)
+			{
+				setVisible(false);
+				MainInit.mainMenu();
+			}
+		});
+		backPanel.add(backButton);
 	}
 	
 }
