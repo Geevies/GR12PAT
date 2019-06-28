@@ -1,7 +1,5 @@
 package PAT.main;
 
-import PAT.EmployeeEnter;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -113,7 +111,7 @@ public class MainMenu extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("aint shit yet");
+				MainInit.employeeOverview(MainMenu.this);
 			}
 		});
 		empOverviewPanel.add(empOverviewButton);
@@ -132,11 +130,7 @@ public class MainMenu extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e)
 			{
-				System.out.println("Add/Edit Employee Opening!");
-				setVisible(false);
-				EmployeeEnter addEmp = new EmployeeEnter();
-				MainInit.base.add(addEmp, 0);
-				MainInit.base.pack();
+				System.out.println("aint shit yet");
 			}
 		});
 		empAddPanel.add(empAddButton);

@@ -1,6 +1,7 @@
-package PAT;
+package PAT.screens;
 
 import PAT.main.MainInit;
+import SQLBackend.SQLEmployees;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
@@ -24,12 +25,17 @@ import javax.swing.JTextField;
 
 import com.toedter.calendar.JCalendar;
 import java.awt.Color;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class EmployeeEnter extends JPanel {
 
-	public EmployeeEnter() {
+	//TODO, PayRate
+	public EmployeeEnter(Boolean newEmployee, String name, String ID, String gender, String DoB) {
 		setPreferredSize(new Dimension(800, 600));
-		setBackground(Color.red);
+		//setBackground(Color.red);
 
 		GridBagLayout gbl = new GridBagLayout();
 		
@@ -76,6 +82,7 @@ public class EmployeeEnter extends JPanel {
 		//namePanel.setBackground(Color.cyan);
 		add(namePanel, c);
 		
+
 		JTextField nameField = new JTextField("Name and Surname:");
 		nameField.setPreferredSize(new Dimension (130, 30));
 		nameField.setEditable(false);
@@ -90,7 +97,10 @@ public class EmployeeEnter extends JPanel {
 		//nEntryPanel.setBackground(Color.cyan);
 		add(nEntryPanel, c);
 		
-		JTextField nEntryField = new JTextField("John Smith");
+		if (name == null) {
+			name = "John Smith";
+		}		
+		JTextField nEntryField = new JTextField(name);
 		nEntryField.setPreferredSize(new Dimension (180, 30));
 		nEntryField.setHorizontalAlignment(JTextField.CENTER);
 		nEntryField.addFocusListener(new FocusAdapter() {
@@ -141,6 +151,9 @@ public class EmployeeEnter extends JPanel {
 		//The following codeblock creates and displays a fully accurate example ID
 		//(Checksum accuracy not included)
 		//The example ID disappears once the field is highlighted to begin input
+		//TODO: Put all this garbage in a method.
+		
+		if (ID == null) {
 		Calendar exampleIDDate = Calendar.getInstance();
 		exampleIDDate.add(Calendar.YEAR, -16);
 		String exampleMonth = String.valueOf(exampleIDDate.get(Calendar.MONTH) + 1);
@@ -157,7 +170,10 @@ public class EmployeeEnter extends JPanel {
 				+ exampleGenderedNumber
 				+ String.valueOf((int)(Math.random()))
 				+ String.valueOf((int)(Math.random()*10-1));
-		JTextField idEntryField = new JTextField(exampleID);
+		
+		ID = exampleID;
+		}
+		JTextField idEntryField = new JTextField(ID);
 		idEntryField.setPreferredSize(new Dimension (180, 30));
 		idEntryField.setHorizontalAlignment(JTextField.CENTER);
 		idEntryField.addFocusListener(new FocusAdapter() {
@@ -211,7 +227,11 @@ public class EmployeeEnter extends JPanel {
 		bgroup.add(rbM);
 		bgroup.add(rbF);
 		gEntryPanel.add(rbM);
-		rbM.setSelected(true);
+		if (gender != null) {
+			if (gender.equalsIgnoreCase("M")) rbM.setSelected(true);
+			else rbF.setSelected(true);
+		}
+		else rbM.setSelected(true);
 		gEntryPanel.add(rbF);
 		
 		JPanel gResultPanel = new JPanel();
@@ -250,6 +270,24 @@ public class EmployeeEnter extends JPanel {
 		JCalendar dobPicker = new JCalendar(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis((long) (365.25 * 16))));
 		dobPicker.setMaxSelectableDate(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis((long) (365.25 * 16))));
 		dobPicker.setMinSelectableDate(new Date(System.currentTimeMillis() - TimeUnit.DAYS.toMillis((long) (365.25 * 65))));
+		if (DoB != null) {
+			//Old and deprecated type, but JCalendar needs it.
+			Date date = new Date();
+			//Get correct times from DoB string
+			Integer year = Integer.parseInt(DoB.substring(0, 4));
+			Integer month = Integer.parseInt(DoB.substring(5, 7));
+			Integer day = Integer.parseInt(DoB.substring(8, 10));
+			//Initialize time correctly
+			Calendar temp = Calendar.getInstance();
+			temp.clear();
+			//Component is weird. I don't know why I have to subtract a month,
+			//but it works, though. That's what counts.
+			temp.set(year, month - 1, day);
+			//Put the correct time into the date
+			date = temp.getTime();
+			//Tell the picker to use this date
+			dobPicker.setDate(date);
+		}
 		dobEntryPanel.add(dobPicker);
 		
 		JPanel dobResultPanel = new JPanel();
@@ -269,7 +307,7 @@ public class EmployeeEnter extends JPanel {
 		c.gridy = 5;
 		add(vPanel, c);
 		
-		JButton vButton = new JButton("Validate");
+		JButton vButton = new JButton("Finalize");
 		vButton.setPreferredSize(new Dimension (100, 30));
 		vButton.addActionListener(new ActionListener()
 		{
@@ -362,7 +400,52 @@ public class EmployeeEnter extends JPanel {
 				}
 
 				//Only gets displayed if all the data entered is valid
-				if (validData == true) JOptionPane.showMessageDialog(null, "Validation Successful!");
+				if (validData == true) {
+					Integer choice = JOptionPane.showConfirmDialog(null, "Do you wish to commit this to your database?");
+					System.out.println(choice); //TODO: Remove this line
+					if (choice == 0 && newEmployee == true)
+					{
+						System.out.println("Adding Employee!");
+						
+						//Split full name into first name and surname
+						String tempName = nEntryField.getText();
+						String[] tempSplit = tempName.split(" ", 2);
+						String fName = tempSplit[0];
+						String sName = tempSplit[1];
+						
+						//Get gender
+						String g = "M"; //Default gender is Male
+						if (rbM.isSelected()) {
+							g = "M";
+						}
+						if (rbF.isSelected()) {
+							g = "F";
+						}
+						
+						//Now we use this formatter to trim the date so that
+						//it doesn't include hours, minutes and seconds anymore
+						SimpleDateFormat formatter = new SimpleDateFormat("MM/dd/yyyy");
+						Date tempDate = dobPicker.getDate();
+						try {
+							tempDate = formatter.parse(formatter.format(dobPicker.getDate()));
+						} catch (ParseException ex) {
+							ex.printStackTrace();
+						}
+						
+						//Get DoB from parser 
+						//(Needs to be converted to SQL date)
+						java.sql.Date sqlDate = new java.sql.Date(tempDate.getTime());
+	
+						//Make new employee
+						SQLEmployees.newEmployee(idEntryField.getText(), fName, sName, sqlDate, 30, g);
+						//Make sure to update list with new employee
+						SQLEmployees.initEmployees();
+						
+						//Put us back in the employee overview screen
+						MainInit.employeeOverview(EmployeeEnter.this);
+					}
+				}
+					
 			}
 		});
 		vPanel.add(vButton);
@@ -382,7 +465,7 @@ public class EmployeeEnter extends JPanel {
 			public void actionPerformed(ActionEvent e)
 			{
 				setVisible(false);
-				MainInit.mainMenu();
+				MainInit.employeeOverview(EmployeeEnter.this);
 			}
 		});
 		backPanel.add(backButton);
